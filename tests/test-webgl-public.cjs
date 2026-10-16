@@ -1,0 +1,20 @@
+const {chromium}=require('playwright'), crypto=require('crypto');
+(async()=>{
+ const b=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+ const p=await b.newPage({viewport:{width:1366,height:900}});
+ const errors=[];p.on('pageerror',e=>errors.push(e.message));
+ p.on('console',m=>{if(m.type()==='error')errors.push(m.text().slice(0,250))});
+ await p.goto('https://rumble.hoststorm.cloud/recomp/',{waitUntil:'domcontentloaded'});
+ console.log('ISOLATED',await p.evaluate(()=>crossOriginIsolated));
+ await p.waitForFunction(()=>!document.querySelector('#start').disabled,null,{timeout:90000});
+ await p.locator('#start').click();
+ await p.waitForFunction(()=>typeof Module._fish_web_set_direct_present==='function',{timeout:90000});
+ await p.waitForTimeout(21000);
+ const read=()=>p.evaluate(()=>({time:performance.now(),v:Module._psx_web_perf_vblanks?.(),draw:Module.fishWebPresenter?.draws,render:Module._fish_web_perf_render_us?.(),frames:Module._fish_web_perf_render_frames?.(),pad:Module._psx_web_get_pad_buttons?.(),status:document.querySelector('#status')?.textContent,canvas:document.querySelector('#nascarFastCanvas')?.style.visibility}));
+ const a=await read();await p.waitForTimeout(12000);const z=await read();
+ console.log('PERF',JSON.stringify({fps:(z.v-a.v)/((z.time-a.time)/1000),draws:z.draw-a.draw,renderMs:(z.render-a.render)/(z.frames-a.frames)/1000,status:z.status,canvas:z.canvas}));
+ let target=z.draw>0?'#nascarFastCanvas':'#canvas';
+ const shot=await p.locator(target).screenshot({path:'/project/recomp/test-client/webgl-public.png'});
+ console.log('SCREENSHOT',crypto.createHash('sha1').update(shot).digest('hex'),target);
+ console.log('ERRORS',JSON.stringify(errors));await b.close();
+})().catch(e=>{console.error('FAILED',e.stack);process.exitCode=1});

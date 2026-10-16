@@ -1,0 +1,26 @@
+# Proprietary PS1 content — must not be uploaded
+*.bin
+*.cue
+*.iso
+*.chd
+*.img
+*.pbp
+*.bios
+SLUS_*
+SLES_*
+SCUS_*
+# Generated recompiled payloads
+*.wasm
+recomp/web-port/
+site/
+recomp/diag-canary/
+recomp/compat-test/
+recomp/fmv-canary/
+recomp/test-client/*.log
+recomp/test-client/*.png
+__pycache__/
+*.pyc
+node_modules/
+.env
+*.key
+*.pem

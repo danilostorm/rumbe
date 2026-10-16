@@ -1,0 +1,47 @@
+--- a/runtime/src/main.cpp
++++ b/runtime/src/main.cpp
+@@ -1552,6 +1552,44 @@
+     return gte_geometry_correction_hits();
+ }
+ 
++/* NASCAR diagnostics (read-only). These telemetry values are sampled from the
++ * browser solely while investigating the EA intro stall. They never change
++ * emulated registers, disc sectors or timers. */
++extern "C" uint32_t g_debug_current_func_addr;
++extern "C" uint32_t g_debug_last_store_pc;
++extern "C" uint64_t g_dirty_pump_count;
++extern "C" uint32_t mdec_get_decode_count(void);
++extern "C" EMSCRIPTEN_KEEPALIVE double nascar_web_diag(uint32_t i) {
++    CDROMDebugState cd={}; cdrom_debug_snapshot(&cd);
++    CPUState *cpu=debug_cpu_ptr;
++    switch (i) {
++    case 0: return (double)g_debug_current_func_addr;
++    case 1: return (double)g_debug_last_store_pc;
++    case 2: return cpu ? (double)cpu->pc : 0;
++    case 3: return cpu ? (double)cpu->gpr[31] : 0;
++    case 4: return cpu ? (double)cpu->gpr[2] : 0;
++    case 5: return (double)g_dirty_pump_count;
++    case 6: return (double)mdec_get_decode_count();
++    case 7: return (double)cd.reading;
++    case 8: return (double)cd.pending_cmd;
++    case 9: return (double)cd.irq_flag;
++    case 10:return (double)cd.irq_enable;
++    case 11:return (double)cd.last_sector_lba;
++    case 12:return (double)cd.last_sector_frame;
++    case 13:return (double)cd.i_stat;
++    case 14:return (double)cd.read_delay;
++    case 15:return (double)cd.read_hold_events;
++    case 16:return (double)cd.read_hold_cycles;
++    case 17:return (double)cd.int1_pended;
++    case 18:return (double)cd.int1_lost;
++    case 19:return (double)cd.response_count;
++    case 20:return (double)cd.sector_available;
++    case 21:return (double)cd.mode_reg;
++    case 22:return (double)cd.read_cmd;
++    case 23:return (double)cd.pending_delay;
++    default:return 0;
++    }
++}
+ extern "C" EMSCRIPTEN_KEEPALIVE double psx_web_perf_vblanks(void) {
+     return (double)g_web_perf_vblanks.load(std::memory_order_relaxed);
+ }
