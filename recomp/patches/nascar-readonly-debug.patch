@@ -1,6 +1,14 @@
 --- a/runtime/src/main.cpp
 +++ b/runtime/src/main.cpp
-@@ -1552,6 +1552,44 @@
+@@ -11,6 +11,7 @@
+ #include "device_trace.h"    /* general two-process device-event cycle ring */
+ #include "psx_interpreter.h"
+ #include "cdrom.h"
++#include "mdec.h"
+ #include "fntrace.h"
+ #include "text_xlate.h"
+ #include "boot_state.h"
+@@ -1552,6 +1553,68 @@
      return gte_geometry_correction_hits();
  }
  
@@ -13,6 +21,7 @@
 +extern "C" uint32_t mdec_get_decode_count(void);
 +extern "C" EMSCRIPTEN_KEEPALIVE double nascar_web_diag(uint32_t i) {
 +    CDROMDebugState cd={}; cdrom_debug_snapshot(&cd);
++    MDECDebugState md={}; mdec_debug_get_state(&md);
 +    CPUState *cpu=debug_cpu_ptr;
 +    switch (i) {
 +    case 0: return (double)g_debug_current_func_addr;
@@ -39,6 +48,29 @@
 +    case 21:return (double)cd.mode_reg;
 +    case 22:return (double)cd.read_cmd;
 +    case 23:return (double)cd.pending_delay;
++    case 24:return (double)md.command;
++    case 25:return (double)md.expected_halfwords;
++    case 26:return (double)md.input_count;
++    case 27:return (double)md.output_size;
++    case 28:return (double)md.output_pos;
++    case 29:return (double)md.busy;
++    case 30:return (double)md.input_full;
++    case 31:return (double)md.enable_dma_in;
++    case 32:return (double)md.enable_dma_out;
++    case 33:return (double)md.last_status;
++    case 34:return (double)md.decode_macroblocks;
++    case 35:return (double)md.decode_blocks;
++    case 36:return (double)md.decode_stop_reason;
++    case 37:return (double)md.decode_input_pos;
++    case 38:return (double)md.decode_input_end;
++    case 39:return (double)md.dma_in_words;
++    case 40:return (double)md.dma_out_words;
++    case 41:return (double)md.dma_read_underflows;
++    case 42:return (double)cd.filter_file;
++    case 43:return (double)cd.filter_channel;
++    case 44:return (double)cd.param_count;
++    case 45:return (double)cd.response_read;
++    case 46:return (double)cd.pending_phase;
 +    default:return 0;
 +    }
 +}

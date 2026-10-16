@@ -47,3 +47,13 @@ Identificar por que os VBlanks avançam mas o jogo permanece no logotipo EA; inv
 O site principal mantém a versão anterior que já funciona enquanto corrigimos o port nativo.
 
 Atenção à distribuição: o endpoint /disc/nascar-rumble.bin existente no site principal expõe dados protegidos por direitos autorais. A prévia reutiliza essa rota, mas não contém o BIN em seus assets. Hospedagem pública exige autorização dos titulares.
+
+## Diagnóstico adicional de 16/10 — ISO/MDEC
+
+A tabela de diretórios ISO 9660 foi lida da imagem original, sem modificá-la. `CW/OPENING/INTRO.WVE` começa no setor lógico 93447 e termina imediatamente antes de 97407. `CW/OPENING/LEGAL.LSC` ocupa 97407–97424 e a área `DUMMY.DAT` começa em 97425.
+
+No teste com interface de diagnóstico somente leitura, a máquina continuou solicitando setores acima do fim de `INTRO.WVE` (inclusive setores de `DUMMY.DAT`) enquanto a imagem da EA permaneceu estática. Houve aproximadamente 1417 VBlanks, mas somente 17 chamadas de decodificação MDEC e ~364 apresentações WebGL2 naquele ponto. O CD seguia em `ReadN (0x06)`, modo 0xA0, com buffer de setor disponível. O contador de leituras suspensas pelo ACK continuou zero.
+
+**Interpretação:** a transição da introdução ainda está bloqueada e exige análise do fluxo de CD/MDEC/game. O padrão sugere leitura prolongada após o fim do vídeo, mas isso não demonstra, por si só, um erro no driver; o código do jogo, temporizadores, DMA ou decodificador podem ser responsáveis. Evitar correções artificiais em LBA/EOF até comparar com um comportamento de referência.
+
+Adicionado patch opcional `nascar-readonly-debug.patch` com `nascar_web_diag(n)` para observar CD-ROM, registros MIPS e MDEC sem alterar a emulação. Esta instrumentação permanece no binário de teste local e **não** foi colocada no site público.
